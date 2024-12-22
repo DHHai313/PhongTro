@@ -20,15 +20,14 @@ public class JDBCUtill {
     public static Connection getConnection() {
         Connection c = null;
         try {
-
-            Class.forName("com.mysql.cj.jdbc.Driver");
+//            Class.forName("com.mysql.cj.jdbc.Driver");
+            DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
             String url = "jdbc:mysql://localhost:3306/phongtro";
             String username = "root";
             String password = "";
-            DriverManager.getConnection(url, url, password);
+            c = DriverManager.getConnection(url, username, password);
+
         } catch (SQLException ex) {
-            Logger.getLogger(JDBCUtill.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) { 
             Logger.getLogger(JDBCUtill.class.getName()).log(Level.SEVERE, null, ex);
         }
         return c;
@@ -38,6 +37,7 @@ public class JDBCUtill {
         if (c != null) {
             try {
                 c.close();
+                c = null; // Đảm bảo tài nguyên được giải phóng
             } catch (SQLException ex) {
                 Logger.getLogger(JDBCUtill.class.getName()).log(Level.SEVERE, null, ex);
                 ex.printStackTrace();

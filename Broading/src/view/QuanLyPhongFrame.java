@@ -4,18 +4,29 @@
  */
 package view;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import database.JDBCUtill;
+import javax.swing.table.DefaultTableModel;
+import java.sql.ResultSet;
+
 /**
  *
  * @author Haitaiba
  */
 public class QuanLyPhongFrame extends javax.swing.JFrame {
 
+    private JDBCUtill JDBCUtil;
+
     /**
      * Creates new form QuanLyPhongFrame
      */
     public QuanLyPhongFrame() {
         initComponents();
-           this.setLocationRelativeTo(null);
+        this.setLocationRelativeTo(null);
+        loadTableData();
     }
 
     /**
@@ -38,6 +49,7 @@ public class QuanLyPhongFrame extends javax.swing.JFrame {
         btXoa = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -62,12 +74,27 @@ public class QuanLyPhongFrame extends javax.swing.JFrame {
         getContentPane().add(cbTrangThai, new org.netbeans.lib.awtextra.AbsoluteConstraints(540, 80, 40, -1));
 
         btThem.setText("Thêm");
+        btThem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btThemActionPerformed(evt);
+            }
+        });
         getContentPane().add(btThem, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 110, -1, -1));
 
         btSua.setText("Sửa");
+        btSua.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btSuaActionPerformed(evt);
+            }
+        });
         getContentPane().add(btSua, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 110, -1, -1));
 
         btXoa.setText("Xóa");
+        btXoa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btXoaActionPerformed(evt);
+            }
+        });
         getContentPane().add(btXoa, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 110, -1, -1));
 
         jTable1.setBorder(new javax.swing.border.MatteBorder(null));
@@ -86,6 +113,14 @@ public class QuanLyPhongFrame extends javax.swing.JFrame {
 
         getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(2, 160, 600, 240));
 
+        jButton1.setText("Home");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
+
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Quanlyphong.png"))); // NOI18N
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
@@ -98,9 +133,135 @@ public class QuanLyPhongFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_cbTrangThaiActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        Home home = new Home();
+        home.show();
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void btThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btThemActionPerformed
+        // TODO add your handling code here:
+        try {
+            Connection con = JDBCUtil.getConnection();
+            String sql = "INSERT INTO phongtro(tenphong,trangthai,dodac) VALUES (?,?,?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, txtTenPhong.getText());
+            ps.setBoolean(2, cbTrangThai.isSelected());
+            ps.setString(3, txtDoDac.getText());
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                JOptionPane.showMessageDialog(this, "Thêm thành công!");
+                loadTableData(); // Cập nhật bảng
+            }
+            ps.close();
+            JDBCUtil.closeConnection(con);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi thêm dữ liệu: " + e.getMessage());
+        }
+    }//GEN-LAST:event_btThemActionPerformed
+
+    private void btXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btXoaActionPerformed
+        // TODO add your handling code here:
+        int row = jTable1.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 phòng để xóa");
+            return;
+        }
+        String maPhong = jTable1.getValueAt(row, 0).toString();
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa dòng này");
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                Connection con = JDBCUtill.getConnection();
+                String sql = "DELETE FROM phongtro WHERE maphong = ?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, maPhong);
+                int result = ps.executeUpdate();
+
+                if (result > 0) {
+                    JOptionPane.showMessageDialog(this, "Xóa phòng thành công!");
+                    loadTableData(); // Cập nhật bảng
+                }
+                ps.close();
+                JDBCUtil.closeConnection(con);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi khi xóa phòng!" + e.getMessage());
+            }
+        }
+    }//GEN-LAST:event_btXoaActionPerformed
+
+    private void btSuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btSuaActionPerformed
+        int row = jTable1.getSelectedRow(); // Lấy dòng được chọn
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một phòng để sửa!");
+            return;
+        }
+
+        String maPhong = jTable1.getValueAt(row, 0).toString(); // Lấy mã phòng
+        String tenPhong = txtTenPhong.getText();
+        String doDac = txtDoDac.getText();
+        boolean trangThai = cbTrangThai.isSelected(); // Checkbox cho trạng thái
+
+        try {
+            Connection con = JDBCUtill.getConnection();
+            String sql = "UPDATE phongtro SET tenphong = ?, trangthai = ?, dodac = ? WHERE maphong = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, tenPhong);
+            ps.setBoolean(2, trangThai);
+            ps.setString(3, doDac);
+            ps.setString(4, maPhong);
+
+            int result = ps.executeUpdate();
+
+            if (result > 0) {
+                JOptionPane.showMessageDialog(this, "Cập nhật phòng thành công!");
+                loadTableData(); // Cập nhật bảng
+            }
+            ps.close();
+            JDBCUtil.closeConnection(con);
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi sửa phòng: " + ex.getMessage());
+        }
+    }//GEN-LAST:event_btSuaActionPerformed
+
     /**
      * @param args the command line arguments
      */
+    private void loadTableData() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0); // Clear dữ liệu cũ trong bảng
+        try {
+            // Kết nối CSDL
+            Connection con = JDBCUtill.getConnection();
+
+            // Truy vấn dữ liệu
+            String sql = "SELECT maphong, tenphong, trangthai, dodac FROM phongtro";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            // Duyệt kết quả và thêm vào model
+            while (rs.next()) {
+                String maPhong = rs.getString("maphong");
+                String tenPhong = rs.getString("tenphong");
+                String doDac = rs.getString("dodac");
+                String trangThai = rs.getBoolean("trangthai") ? "Đã thuê" : "Chưa thuê";
+                model.addRow(new Object[]{maPhong, tenPhong, doDac, trangThai});
+            }
+
+            rs.close();
+            ps.close();
+            JDBCUtil.closeConnection(con);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu: " + ex.getMessage());
+        }
+    }
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -138,6 +299,7 @@ public class QuanLyPhongFrame extends javax.swing.JFrame {
     private javax.swing.JButton btThem;
     private javax.swing.JButton btXoa;
     private javax.swing.JCheckBox cbTrangThai;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
