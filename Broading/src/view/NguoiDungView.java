@@ -12,6 +12,7 @@ import database.JDBCUtill;
 import javax.swing.table.DefaultTableModel;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,8 +21,10 @@ import java.util.logging.Logger;
  * @author Haitaiba
  */
 public class NguoiDungView extends javax.swing.JFrame {
-        private String taiKhoan;
-        private String matKhau;
+
+    private String taiKhoan;
+    private String matKhau;
+
     /**
      * Creates new form NguoiDungView
      */
@@ -71,18 +74,18 @@ public class NguoiDungView extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Tên phòng", "Đồ đạc", "SĐT", "Căn cước", "Tiền điện", "Tiền nước", "Tổng tiền", "Thanh toán"
+                "Tên phòng", "Đồ đạc", "SĐT", "Căn cước", "Tiền điện", "Tiền nước", "Tiền phòng", "Tổng tiền", "Ngày tạo", "Thanh toán"
             }
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 80, 810, 60));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 80, 810, 100));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/nguoidung.png"))); // NOI18N
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 810, 400));
@@ -101,71 +104,80 @@ public class NguoiDungView extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     private void loadTen() {
-            try {
-                Connection con = JDBCUtill.getConnection();
-                String sql = "SELECT hovaten\n"
-                        + "FROM khachthue\n"
-                        + "JOIN nguoidung  ON nguoidung.makhachthue = khachthue.makhachthue\n"
-                        + "WHERE nguoidung.taikhoan = ? AND nguoidung.matkhau = ?;";
-                PreparedStatement ps = con.prepareStatement(sql);
-                ps.setString(1, taiKhoan);
-                ps.setString(2, matKhau);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    String hoVaTen = rs.getString("hovaten");
-                    txtThongTin.setText("Xin Chào:"+hoVaTen);
-                }else{
-                    JOptionPane.showMessageDialog(this, "Không tìm thấy tên người dùng!");
-                }
-                JDBCUtill.closeConnection(con);
-            } catch (SQLException ex) {
-                Logger.getLogger(NguoiDungView.class.getName()).log(Level.SEVERE, null, ex);
-                JOptionPane.showMessageDialog(this, "Lỗi khi tải thông tin họ và tên.");
+        try {
+            Connection con = JDBCUtill.getConnection();
+            String sql = "SELECT hovaten\n"
+                    + "FROM khachthue\n"
+                    + "JOIN nguoidung  ON nguoidung.makhachthue = khachthue.makhachthue\n"
+                    + "WHERE nguoidung.taikhoan = ? AND nguoidung.matkhau = ?;";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, taiKhoan);
+            ps.setString(2, matKhau);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String hoVaTen = rs.getString("hovaten");
+                txtThongTin.setText("Xin Chào:" + hoVaTen);
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy tên người dùng!");
             }
-    }
-private void loadDataToTable() {
-    try {
-        Connection con = JDBCUtill.getConnection();
-        String sql = "SELECT p.tenphong, p.dodac, k.sodienthoai, k.cccd, h.tiendien, h.tiennuoc, h.tienphong, h.tongtien, h.thanhtoan " +
-                     "FROM nguoidung u " +
-                     "JOIN khachthue k ON u.makhachthue = k.makhachthue " +
-                     "JOIN phongtro p ON k.maphong = p.maphong " +
-                     "JOIN hoadon h ON k.makhachthue = h.makhachthue " +
-                     "WHERE u.taikhoan = ? AND u.matkhau = ?";
-        
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setString(1, taiKhoan);
-        ps.setString(2, matKhau);
-        
-        ResultSet rs = ps.executeQuery();
-        
-        // Định nghĩa các cột trong bảng
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0);  // Xóa dữ liệu cũ trong bảng
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        // Lặp qua các kết quả và thêm vào bảng
-        while (rs.next()) {
-            String tenPhong = rs.getString("tenphong");
-            String doDac = rs.getString("dodac");
-            String soDienThoai = rs.getString("sodienthoai");
-            String cccd = rs.getString("cccd");
-            String tienDien = formatter.format(rs.getDouble("tiendien"));
-            String tienNuoc = formatter.format(rs.getDouble("tiennuoc"));
-            String tienPhong = formatter.format(rs.getDouble("tienphong"));
-            String tongTien = formatter.format(rs.getDouble("tongtien"));
-            String thanhToan = rs.getString("thanhtoan");
-            
-            // Thêm một dòng vào bảng
-            model.addRow(new Object[]{tenPhong, doDac, soDienThoai, cccd, tienDien, tienNuoc, tienPhong, tongTien, thanhToan});
+            JDBCUtill.closeConnection(con);
+        } catch (SQLException ex) {
+            Logger.getLogger(NguoiDungView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải thông tin họ và tên.");
         }
-        
-        JDBCUtill.closeConnection(con);
-    } catch (SQLException ex) {
-        Logger.getLogger(NguoiDungView.class.getName()).log(Level.SEVERE, null, ex);
-        JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu vào bảng.");
     }
-}
 
+    private void loadDataToTable() {
+        try {
+            Connection con = JDBCUtill.getConnection();
+            String sql = "SELECT p.tenphong, p.dodac, k.sodienthoai, k.cccd, h.tiendien, h.tiennuoc, h.tienphong, h.tongtien,h.ngaytao, h.thanhtoan "
+                    + "FROM nguoidung u "
+                    + "JOIN khachthue k ON u.makhachthue = k.makhachthue "
+                    + "JOIN phongtro p ON k.maphong = p.maphong "
+                    + "JOIN hoadon h ON k.makhachthue = h.makhachthue "
+                    + "WHERE u.taikhoan = ? AND u.matkhau = ?";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, taiKhoan);
+            ps.setString(2, matKhau);
+
+            ResultSet rs = ps.executeQuery();
+
+            // Định nghĩa các cột trong bảng
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            model.setRowCount(0);  // Xóa dữ liệu cũ trong bảng
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            // Lặp qua các kết quả và thêm vào bảng
+            while (rs.next()) {
+                java.sql.Date ngayTaoDate = rs.getDate("ngaytao");
+                
+                String tenPhong = rs.getString("tenphong");
+                String doDac = rs.getString("dodac");
+                String soDienThoai = rs.getString("sodienthoai");
+                String cccd = rs.getString("cccd");
+                String tienDien = formatter.format(rs.getDouble("tiendien"));
+                String tienNuoc = formatter.format(rs.getDouble("tiennuoc"));
+                String tienPhong = formatter.format(rs.getDouble("tienphong"));
+                String tongTien = formatter.format(rs.getDouble("tongtien"));
+                String ngayTao = (ngayTaoDate!=null)?dateFormat.format(ngayTaoDate):"";
+                String thanhToan = rs.getString("thanhtoan");
+                if (thanhToan.equals("1")) {
+                    thanhToan = "Đã thanh toán";
+                } else {
+                    thanhToan = "Chưa thanh toán";
+                }
+                
+                // Thêm một dòng vào bảng
+                model.addRow(new Object[]{tenPhong, doDac, soDienThoai, cccd, tienDien, tienNuoc, tienPhong, tongTien, ngayTao, thanhToan});
+            }
+
+            JDBCUtill.closeConnection(con);
+        } catch (SQLException ex) {
+            Logger.getLogger(NguoiDungView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu vào bảng.");
+        }
+    }
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */

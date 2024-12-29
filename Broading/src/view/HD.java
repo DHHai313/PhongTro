@@ -12,6 +12,10 @@ import database.JDBCUtill;
 import javax.swing.table.DefaultTableModel;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -60,6 +64,8 @@ public class HD extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         btThem = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        jLabel9 = new javax.swing.JLabel();
+        txtNgayTao = new javax.swing.JTextField();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -79,13 +85,14 @@ public class HD extends javax.swing.JFrame {
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Mã hoá đơn", "Mã khách thuê", "Mã phòng", "Tiền điện", "Tiền nước", "Tiền phòng", "Tổng tiền", "Thanh toán"
+                "Mã hoá đơn", "Mã khách thuê", "Mã phòng", "Ngày tạo", "Tiền điện", "Tiền nước", "Tiền phòng", "Tổng tiền", "Thanh toán"
             }
         ));
         jTable2.setPreferredSize(new java.awt.Dimension(100, 50));
@@ -153,6 +160,8 @@ public class HD extends javax.swing.JFrame {
             }
         });
 
+        jLabel9.setText("Ngày tạo");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -167,13 +176,14 @@ public class HD extends javax.swing.JFrame {
                 .addGap(17, 17, 17)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(btThem, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(cbMaKhachThue, 0, 125, Short.MAX_VALUE)
-                        .addComponent(cbMaPhong, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(cbMaKhachThue, 0, 125, Short.MAX_VALUE)
+                    .addComponent(cbMaPhong, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtNgayTao))
                 .addGap(73, 73, 73)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
@@ -222,13 +232,17 @@ public class HD extends javax.swing.JFrame {
                         .addComponent(cbMaPhong, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(cbThanhToan))
-                .addGap(37, 37, 37)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btSua)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtNgayTao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btThem)
+                    .addComponent(btSua)
                     .addComponent(btXoa))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -246,16 +260,22 @@ public class HD extends javax.swing.JFrame {
             String maHoaDon = jTable2.getValueAt(selectedRow, 0).toString();
 
             Connection con = JDBCUtill.getConnection();
-            String sql = "UPDATE hoadon SET makhachthue = ?, maphong = ?, tiendien = ?, tiennuoc = ?, tienphong = ?, thanhtoan = ? WHERE mahoadon = ?";
+            String sql = "UPDATE hoadon SET makhachthue = ?, maphong = ?, ngaytao=?,tiendien = ?, tiennuoc = ?, tienphong = ?, thanhtoan = ? WHERE mahoadon = ?";
             PreparedStatement ps = con.prepareStatement(sql);
 
             ps.setString(1, cbMaKhachThue.getSelectedItem().toString());
             ps.setString(2, cbMaPhong.getSelectedItem().toString());
-            ps.setDouble(3, Double.parseDouble(txtTienDien.getText()));
-            ps.setDouble(4, Double.parseDouble(txtTienNuoc.getText()));
-            ps.setDouble(5, Double.parseDouble(txtTienPhong.getText()));
-            ps.setBoolean(6, cbThanhToan.isSelected());
-            ps.setString(7, maHoaDon);
+            // Lấy giá trị từ các trường nhập liệu
+            String ngayTaoStr = txtNgayTao.getText(); // Giả sử định dạng là "dd/MM/yyyy"
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+            java.util.Date utilDate = inputFormat.parse(ngayTaoStr); // Chuyển đổi sang java.util.Date
+            java.sql.Date ngayTao = new java.sql.Date(utilDate.getTime()); // Chuyển sang java.sql.Date
+            ps.setDate(3, ngayTao);
+            ps.setDouble(4, Double.parseDouble(txtTienDien.getText()));
+            ps.setDouble(5, Double.parseDouble(txtTienNuoc.getText()));
+            ps.setDouble(6, Double.parseDouble(txtTienPhong.getText()));
+            ps.setBoolean(7, cbThanhToan.isSelected());
+            ps.setString(8, maHoaDon);
 
             int result = ps.executeUpdate();
             if (result > 0) {
@@ -266,8 +286,8 @@ public class HD extends javax.swing.JFrame {
             JDBCUtill.closeConnection(con);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Lỗi khi sửa hóa đơn: " + e.getMessage());
-        }catch (Exception e){
-             JOptionPane.showMessageDialog(this, "Lỗi khi sửa hóa đơn: " + e.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi sửa hóa đơn: " + e.getMessage());
         }
     }//GEN-LAST:event_btSuaActionPerformed
 
@@ -287,19 +307,27 @@ public class HD extends javax.swing.JFrame {
         // TODO add your handling code here:
         try {
             Connection con = JDBCUtill.getConnection();
-            String sql = "INSERT INTO hoadon (makhachthue, maphong, tiendien, tiennuoc, tienphong, tongtien, thanhtoan) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO hoadon (makhachthue, maphong, ngaytao,tiendien, tiennuoc, tienphong, tongtien, thanhtoan) VALUES (?, ?,?, ?, ?, ?, ?, ?)";
             PreparedStatement ps = con.prepareStatement(sql);
             Double tienDien = Double.parseDouble(txtTienDien.getText());
             Double tienNuoc = Double.parseDouble(txtTienNuoc.getText());
             Double tienPhong = Double.parseDouble(txtTienPhong.getText());
-            Double tongTien =  tienDien+tienNuoc+tienPhong;
+            Double tongTien = tienDien + tienNuoc + tienPhong;
             ps.setString(1, cbMaKhachThue.getSelectedItem().toString());
             ps.setString(2, cbMaPhong.getSelectedItem().toString());
-            ps.setDouble(3, tienDien);
-            ps.setDouble(4, tienNuoc);
-            ps.setDouble(5, tienPhong);
-            ps.setDouble(6, tongTien);
-            ps.setBoolean(7, cbThanhToan.isSelected());
+//            String ngayTaoStr = txtNgayTao.getText(); // Giả sử định dạng là "yyyy-MM-dd"
+//            java.sql.Date ngayTao = java.sql.Date.valueOf(ngayTaoStr); // Chuyển đổi sang java.sql.Date
+// Lấy giá trị ngày tạo từ txtNgayTao
+            String ngayTaoStr = txtNgayTao.getText(); // Giả sử định dạng là "ngày/tháng/năm"
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+            java.util.Date utilDate = inputFormat.parse(ngayTaoStr); // Chuyển đổi sang java.util.Date
+            java.sql.Date ngayTao = new java.sql.Date(utilDate.getTime()); // Chuyển sang java.sql.Date
+            ps.setDate(3, ngayTao);
+            ps.setDouble(4, tienDien);
+            ps.setDouble(5, tienNuoc);
+            ps.setDouble(6, tienPhong);
+            ps.setDouble(7, tongTien);
+            ps.setBoolean(8, cbThanhToan.isSelected());
 
             int result = ps.executeUpdate();
             if (result > 0) {
@@ -310,6 +338,8 @@ public class HD extends javax.swing.JFrame {
             JDBCUtill.closeConnection(con);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Lỗi khi thêm hóa đơn: " + e.getMessage());
+        } catch (ParseException ex) {
+            JOptionPane.showMessageDialog(this, "Ngày tạo không đúng định dạng: dd/MM/yyyy");
         }
     }//GEN-LAST:event_btThemActionPerformed
 
@@ -366,16 +396,23 @@ public class HD extends javax.swing.JFrame {
         // Tạo định dạng cho số tiền
         DecimalFormat formatter = new DecimalFormat("#,###");
 
+        // Tạo đối tượng SimpleDateFormat để định dạng ngày
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
         // Đổ dữ liệu vào bảng
         while (rs.next()) {
+            java.sql.Date ngayTao = rs.getDate("ngaytao"); // Lấy ngày từ cơ sở dữ liệu
+            String ngayTaoStr = (ngayTao != null) ? dateFormat.format(ngayTao) : ""; // Định dạng ngày
+
             model.addRow(new Object[]{
                 rs.getString("mahoadon"),
                 rs.getString("makhachthue"),
                 rs.getString("maphong"),
-                formatter.format(rs.getFloat("tiendien")),   
-                formatter.format(rs.getFloat("tiennuoc")),  
-                formatter.format(rs.getFloat("tienphong")),  
-                formatter.format(rs.getFloat("tongtien")),   
+                ngayTaoStr, // Hiển thị ngày theo định dạng dd/MM/yyyy
+                formatter.format(rs.getFloat("tiendien")),
+                formatter.format(rs.getFloat("tiennuoc")),
+                formatter.format(rs.getFloat("tienphong")),
+                formatter.format(rs.getFloat("tongtien")),
                 rs.getBoolean("thanhtoan") ? "Đã thanh toán" : "Chưa thanh toán"
             });
         }
@@ -463,10 +500,12 @@ public class HD extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
+    private javax.swing.JTextField txtNgayTao;
     private javax.swing.JTextField txtTienDien;
     private javax.swing.JTextField txtTienNuoc;
     private javax.swing.JTextField txtTienPhong;
